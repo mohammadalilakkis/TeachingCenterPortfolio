@@ -286,6 +286,21 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   // #endregion
 
+  // #region agent log
+  // Verify .well-known file exists (Chrome DevTools request)
+  fetch('/.well-known/appspecific/com.chrome.devtools.json')
+    .then(response => {
+      if (response.ok) {
+        fetch('http://127.0.0.1:7243/ingest/4407d48c-0e29-4861-96d7-f5a434c07f2c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:291',message:'Chrome DevTools JSON file accessible',data:{status:response.status},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+      } else {
+        fetch('http://127.0.0.1:7243/ingest/4407d48c-0e29-4861-96d7-f5a434c07f2c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:295',message:'Chrome DevTools JSON file not accessible',data:{status:response.status},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+      }
+    })
+    .catch(() => {
+      fetch('http://127.0.0.1:7243/ingest/4407d48c-0e29-4861-96d7-f5a434c07f2c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:299',message:'Chrome DevTools JSON file fetch failed',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
+    });
+  // #endregion
+
   // Monitor resource loading errors (excluding extension errors)
   window.addEventListener('error', (event) => {
     // #region agent log
@@ -294,9 +309,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const resourceSrc = event.target.src || event.target.href || 'unknown';
       // Filter out extension errors (polyfill.js, content.js are extension files)
       if (!resourceSrc.includes('polyfill.js') && !resourceSrc.includes('content.js') && !resourceSrc.includes('chrome-extension://')) {
-        fetch('http://127.0.0.1:7243/ingest/4407d48c-0e29-4861-96d7-f5a434c07f2c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:293',message:'Resource loading error detected',data:{tag:resourceType,src:resourceSrc,message:event.message},timestamp:Date.now(),sessionId:'debug-session',runId:'initial',hypothesisId:'A'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7243/ingest/4407d48c-0e29-4861-96d7-f5a434c07f2c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:310',message:'Resource loading error detected',data:{tag:resourceType,src:resourceSrc,message:event.message},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'A'})}).catch(()=>{});
       } else {
-        fetch('http://127.0.0.1:7243/ingest/4407d48c-0e29-4861-96d7-f5a434c07f2c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:296',message:'Extension error detected (not our code)',data:{src:resourceSrc},timestamp:Date.now(),sessionId:'debug-session',runId:'initial',hypothesisId:'B'})}).catch(()=>{});
+        fetch('http://127.0.0.1:7243/ingest/4407d48c-0e29-4861-96d7-f5a434c07f2c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:313',message:'Extension error detected (not our code)',data:{src:resourceSrc},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'B'})}).catch(()=>{});
       }
     }
     // #endregion

@@ -1,0 +1,2 @@
+{"location":"script.js:272","message":"Favicon link found in DOM","data":{"href":"http://127.0.0.1:8000/favicon.svg"},"timestamp":1769694383319,"sessionId":"debug-session","runId":"initial","hypothesisId":"A"}
+{"location":"script.js:276","message":"Favicon loaded successfully","data":{"href":"http://127.0.0.1:8000/favicon.svg"},"timestamp":1769694383508,"sessionId":"debug-session","runId":"initial","hypothesisId":"A"}
