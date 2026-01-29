@@ -266,4 +266,39 @@ document.addEventListener('DOMContentLoaded', () => {
   // Console welcome message
   console.log('%c Synapse Teaching Center ', 'background: #6366f1; color: #fff; padding: 10px; font-size: 16px; font-weight: bold;');
   console.log('%c Welcome to our portfolio! ', 'color: #818cf8; font-size: 14px;');
+
+  // #region agent log
+  // Verify favicon loading
+  const faviconLink = document.querySelector('link[rel="icon"]');
+  if (faviconLink) {
+    fetch('http://127.0.0.1:7243/ingest/4407d48c-0e29-4861-96d7-f5a434c07f2c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:272',message:'Favicon link found in DOM',data:{href:faviconLink.href},timestamp:Date.now(),sessionId:'debug-session',runId:'initial',hypothesisId:'A'})}).catch(()=>{});
+    
+    const faviconImg = new Image();
+    faviconImg.onload = () => {
+      fetch('http://127.0.0.1:7243/ingest/4407d48c-0e29-4861-96d7-f5a434c07f2c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:276',message:'Favicon loaded successfully',data:{href:faviconLink.href},timestamp:Date.now(),sessionId:'debug-session',runId:'initial',hypothesisId:'A'})}).catch(()=>{});
+    };
+    faviconImg.onerror = () => {
+      fetch('http://127.0.0.1:7243/ingest/4407d48c-0e29-4861-96d7-f5a434c07f2c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:280',message:'Favicon failed to load',data:{href:faviconLink.href,error:'Image load error'},timestamp:Date.now(),sessionId:'debug-session',runId:'initial',hypothesisId:'A'})}).catch(()=>{});
+    };
+    faviconImg.src = faviconLink.href;
+  } else {
+    fetch('http://127.0.0.1:7243/ingest/4407d48c-0e29-4861-96d7-f5a434c07f2c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:284',message:'Favicon link not found in DOM',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'initial',hypothesisId:'A'})}).catch(()=>{});
+  }
+  // #endregion
+
+  // Monitor resource loading errors (excluding extension errors)
+  window.addEventListener('error', (event) => {
+    // #region agent log
+    if (event.target && event.target.tagName) {
+      const resourceType = event.target.tagName.toLowerCase();
+      const resourceSrc = event.target.src || event.target.href || 'unknown';
+      // Filter out extension errors (polyfill.js, content.js are extension files)
+      if (!resourceSrc.includes('polyfill.js') && !resourceSrc.includes('content.js') && !resourceSrc.includes('chrome-extension://')) {
+        fetch('http://127.0.0.1:7243/ingest/4407d48c-0e29-4861-96d7-f5a434c07f2c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:293',message:'Resource loading error detected',data:{tag:resourceType,src:resourceSrc,message:event.message},timestamp:Date.now(),sessionId:'debug-session',runId:'initial',hypothesisId:'A'})}).catch(()=>{});
+      } else {
+        fetch('http://127.0.0.1:7243/ingest/4407d48c-0e29-4861-96d7-f5a434c07f2c',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'script.js:296',message:'Extension error detected (not our code)',data:{src:resourceSrc},timestamp:Date.now(),sessionId:'debug-session',runId:'initial',hypothesisId:'B'})}).catch(()=>{});
+      }
+    }
+    // #endregion
+  }, true);
 });
