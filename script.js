@@ -63,20 +63,25 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Reveal Animation on Scroll
+  // Reveal Animation on Scroll - Slower and smoother
   const revealElements = document.querySelectorAll('.reveal');
   
   const revealObserver = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('active');
-        // Optional: Unobserve after animation to improve performance
-        // revealObserver.unobserve(entry.target);
+        // Keep observing to maintain visibility when scrolling back up
+      } else {
+        // Only remove active class if scrolled far past (for better UX)
+        const rect = entry.boundingClientRect;
+        if (rect.bottom < -100) {
+          entry.target.classList.remove('active');
+        }
       }
     });
   }, {
-    threshold: 0.1,
-    rootMargin: '0px 0px -50px 0px'
+    threshold: 0.2, // Trigger when 20% visible (was 10%)
+    rootMargin: '0px 0px -150px 0px' // Keep visible longer (was -50px)
   });
 
   revealElements.forEach(element => {
@@ -94,19 +99,32 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Animated Counter for Stats
-  const animateCounter = (element, target, duration = 2000) => {
+  // Animated Counter for Stats - Smoother easing
+  const animateCounter = (element, target, duration = 3000) => {
     let start = 0;
-    const increment = target / (duration / 16);
-    const timer = setInterval(() => {
-      start += increment;
-      if (start >= target) {
-        element.textContent = target + (element.textContent.includes('+') ? '+' : '');
-        clearInterval(timer);
+    const startTime = Date.now();
+    const hasPlus = element.textContent.includes('+');
+    
+    const easeOutCubic = (t) => {
+      return 1 - Math.pow(1 - t, 3);
+    };
+    
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const easedProgress = easeOutCubic(progress);
+      const current = Math.floor(start + (target - start) * easedProgress);
+      
+      element.textContent = current + (hasPlus ? '+' : '');
+      
+      if (progress < 1) {
+        requestAnimationFrame(animate);
       } else {
-        element.textContent = Math.floor(start) + (element.textContent.includes('+') ? '+' : '');
+        element.textContent = target + (hasPlus ? '+' : '');
       }
-    }, 16);
+    };
+    
+    animate();
   };
 
   const statNumbers = document.querySelectorAll('.stat-number');
@@ -118,11 +136,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const number = parseInt(text.replace(/\D/g, ''));
         if (number) {
           entry.target.textContent = '0' + (text.includes('+') ? '+' : '');
-          animateCounter(entry.target, number, 2000);
+          // Slower counter animation for better visibility
+          animateCounter(entry.target, number, 3000);
+        }
+      }
+      // Keep stats visible even when scrolling past
+      if (!entry.isIntersecting) {
+        const rect = entry.boundingClientRect;
+        // Only reset if scrolled very far past
+        if (rect.bottom < -200) {
+          entry.target.classList.remove('counted');
         }
       }
     });
-  }, { threshold: 0.5 });
+  }, { 
+    threshold: 0.3, // Trigger earlier
+    rootMargin: '0px 0px -200px 0px' // Keep visible much longer
+  });
 
   statNumbers.forEach(stat => {
     statsObserver.observe(stat);
